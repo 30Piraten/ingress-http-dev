@@ -1,9 +1,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: gore-ingress
+  name: gore-ingress # update
   labels:
-    name: gore-ingress-dev
+    name: gore-ingress-dev # update
 spec:
   ingressClassName: contour
   rules:
@@ -13,6 +13,6 @@ spec:
         path: "/"
         backend:
           service:
-            name: gore-svc
+            name: gore-svc # update
             port: 
               number: 80
