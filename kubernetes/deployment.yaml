@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gore
+  template:
+    metadata:
+      labels:
+        app: gore
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27.1-alpine-slim
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80

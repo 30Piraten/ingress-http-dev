@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gore-tls
+  namespace: default
+spec:
+  secretName: gore-tls
+  issuerRef: 
+    name: letsencrypt-production
+    kind: Issuer
+  commonName: "gore2.gore.theworkpc.com"
+  dnsNames: 
+  - "gore2.gore.theworkpc.com"
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
