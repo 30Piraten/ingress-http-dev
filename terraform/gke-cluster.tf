@@ -22,7 +22,7 @@ resource "google_container_cluster" "gke_cluster" {
 
 // define the GKE node pool
 resource "google_container_node_pool" "gke-node" {
-  name     = "${var.display_name}-node-pool-1"
+  name     = "gke-np"
   location = var.zone
   cluster  = google_container_cluster.gke_cluster.name
 
