@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "gcterraform-tf-state"
+    bucket = "<storage bucket here>"
     prefix = "gke-cluster-dev"
   }
 }
