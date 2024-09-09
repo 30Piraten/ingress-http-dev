@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gore
+  name: gore # update
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: gore
+      app: gore # update
   template:
     metadata:
       labels:
-        app: gore
+        app: gore # update
     spec:
       containers:
       - name: nginx
