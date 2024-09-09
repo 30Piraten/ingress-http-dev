@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "<storage bucket here>"
-    prefix = "gke-cluster-dev"
+    bucket = "<storage bucket here | create with GCP console or gcloud>"
+    prefix = "update-with-your-prefix"
   }
 }
