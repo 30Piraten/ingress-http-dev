@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: contour
   rules:
-  - host: gore2.gore.theworkpc.com
+  - host: gore2.gore.theworkpc.com #update
     http:
       paths:
       - pathType: Prefix
