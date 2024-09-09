@@ -8,7 +8,7 @@ spec:
   issuerRef: 
     name: letsencrypt-production
     kind: Issuer
-  commonName: "gore2.gore.theworkpc.com"
+  commonName: "gore2.gore.theworkpc.com" 
   dnsNames: 
   - "gore2.gore.theworkpc.com"
   usages:
