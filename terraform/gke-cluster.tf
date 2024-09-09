@@ -5,9 +5,9 @@ resource "google_service_account" "service_account" {
 }
 
 // here we create IAM role to the service account
-resource "google_project_iam_member" "coantainer_admin" {
+resource "google_project_iam_member" "container_admin" {
   project = var.project_id
-  role    = "roles/container.admin"
+  role    = "roles/container.admin" // roles/container.clusterAdmin
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 
