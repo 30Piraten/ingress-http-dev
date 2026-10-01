@@ -6,45 +6,20 @@ The project was built and documented as a practical infrastructure walkthrough, 
 
 Architecture
 
-                         Internet
-                            │
-                            │ HTTP / HTTPS
-                            ▼
-                  ┌─────────────────────┐
-                  │   Google Cloud      │
-                  │   Load Balancer     │
-                  └──────────┬──────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │ Kubernetes Ingress  │
-                  │      Contour        │
-                  └──────────┬──────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │       Envoy         │
-                  │  Proxy / Routing    │
-                  └──────────┬──────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │     ClusterIP       │
-                  │       Service       │
-                  └──────────┬──────────┘
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │    Nginx Pods       │
-                  │    Web Server       │
-                  └─────────────────────┘
+```mermaid
+flowchart TD
+    Client["Internet<br/>HTTP / HTTPS"] --> LB["Google Cloud<br/>Load Balancer"]
+    
+    DNS["DNS"] --> LB
+    LB --> Ingress["Kubernetes Ingress<br/>Contour"]
+    Ingress --> Envoy["Envoy<br/>Proxy / Routing"]
+    Envoy --> Service["ClusterIP<br/>Service"]
+    Service --> Pods["Nginx Pods<br/>Web Server"]
 
-       DNS ───────────────► External Load Balancer IP
-       
-       cert-manager ─────► Let's Encrypt
-                                  │
-                                  ▼
-                           TLS Certificate
+    CM["cert-manager"] --> LE["Let's Encrypt"]
+    LE --> Cert["TLS Certificate"]
+    Cert --> Ingress
+```
 
 ## What this project demonstrates
 
@@ -234,39 +209,49 @@ gore-svc   ClusterIP   34.118.238.166  <none>        80/TCP
 ```
 ---
 
-5. Configure the Ingress
+### 5. Configure the Ingress
 
 The Ingress resource connects the external traffic path to the internal application service.
 
 Apply the configuration:
 
+```bash
 kubectl apply -f ingress.yaml
+```
 
 Verify the Ingress:
 
+```bash
 kubectl get ingress
+```
 
 Example output from the deployment:
 
+```bash
 NAME           CLASS     HOSTS   ADDRESS          PORTS
 gore-ingress   contour   *       35.229.120.117   80,443
+```
 
 The external address is assigned to the load balancer managed by the Contour/Envoy deployment.
 
 Inspect the Envoy service:
 
+```bash
 kubectl get -n projectcontour service envoy -o wide
+```
 
 Example:
 
+```
 NAME    TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)
 envoy   LoadBalancer   34.118.236.21   35.229.120.117   80:30899/TCP,443:31661/TCP
+```
 
 At this point, the application can be reached through the external load balancer address.
 
 ---
 
-6. Configure DNS
+### 6. Configure DNS
 
 The external load balancer IP needs to be associated with a domain name before HTTPS can be configured cleanly.
 
@@ -274,43 +259,42 @@ The original implementation used a DDNS provider to create a DNS record pointing
 
 Conceptually:
 
-gore2.example-domain
-        │
-        │ DNS
-        ▼
-35.229.120.117
-        │
-        ▼
-Google Cloud Load Balancer
-        │
-        ▼
-Contour / Envoy
-        │
-        ▼
-Nginx Service
+```mermaid
+flowchart TD
+    Domain["gore2.example-domain"] -->|DNS resolution| IP["35.229.120.117"]
+    IP -->|HTTP / HTTPS| LB["Google Cloud Load Balancer"]
+    LB -->|Ingress traffic| Contour["Contour"]
+    Contour -->|Proxy / routing| Envoy["Envoy"]
+    Envoy -->|Forward request| Service["Nginx Service"]
+```
 
 Verify that the DNS record resolves to the external address before proceeding with certificate issuance.
 
 ---
 
-7. Install cert-manager
+### 7. Install cert-manager
 
 Install cert-manager into the cluster:
 
+```bash
 kubectl apply -f cert-manager.yaml
+```
 
 Verify the cert-manager workloads:
 
+```bash
 kubectl get pods -n cert-manager
+```
 
 cert-manager manages the lifecycle of the TLS certificate and Kubernetes Secret used by the Ingress.
 
 ---
 
-8. Configure Let's Encrypt
+### 8. Configure Let's Encrypt
 
 Create an Issuer for the Let's Encrypt production environment:
 
+```yaml
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
@@ -326,29 +310,37 @@ spec:
           ingress:
             name: gore-ingress
             ingressClassName: contour
+```
 
 Apply the configuration:
 
+```bash
 kubectl apply -f letsencrypt-cm-issuer.yaml
+```
 
 Verify the Issuer:
 
+```bash
 kubectl describe issuer letsencrypt-production
+```
 
 The original deployment returned:
 
+```bash
 Reason: ACMEAccountRegistered
 Status: True
-Type: Ready
+Type: Read
+```
 
 This confirms that the ACME account was successfully registered with Let's Encrypt.
 
 ---
 
-9. Create the TLS Certificate
+### 9. Create the TLS Certificate
 
 Create a Kubernetes "Certificate" resource:
 
+```bash
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -365,78 +357,80 @@ spec:
     - digital signature
     - key encipherment
     - server auth
+```
 
 Apply it:
 
+```bash
 kubectl apply -f certificate.yaml
+```
 
 Verify the certificate:
 
+```bash
 kubectl describe certificate gore-tls
+```
 
 The original deployment reported:
 
+```bash
 Message: Certificate is up to date and has not expired
 Reason:  Ready
 Status:  True
 Type:    Ready
+```
 
 The certificate resource also exposed its validity and renewal timestamps through Kubernetes status information.
 
 ---
 
-10. Enable HTTPS on the Ingress
+### 10. Enable HTTPS on the Ingress
 
 Update the Ingress configuration to reference the TLS Secret created by cert-manager.
 
 Apply the updated configuration:
 
+```bash
 kubectl apply -f ingress-updated.yaml
+```
 
 Verify the Ingress:
 
+```bash
 kubectl get ingress
+```
 
 Expected structure:
 
+```bash
 NAME           CLASS     HOSTS                  ADDRESS          PORTS
 gore-ingress   contour   your-domain.example    <external-ip>   80,443
+```
 
 At this stage, traffic follows the HTTPS path:
 
-Client
-  │
-  │ HTTPS
-  ▼
-DNS
-  │
-  ▼
-External Load Balancer
-  │
-  ▼
-Contour / Envoy
-  │
-  │ TLS termination
-  ▼
-ClusterIP Service
-  │
-  ▼
-Nginx
-
+```mermaid
+flowchart TD
+    Client["Client"] -->|HTTPS| DNS["DNS"]
+    DNS --> LB["External Load Balancer"]
+    LB --> CE["Contour / Envoy"]
+    CE -->|TLS termination| Service["ClusterIP Service"]
+    Service --> Nginx["Nginx"]
+```
 ---
 
-Verification Checklist
+## Verification Checklist
 
 The deployment was verified progressively rather than treating "terraform apply" or "kubectl apply" as proof of success.
 
-Infrastructure
+## Infrastructure
 
 - [x] GKE cluster provisioned with Terraform
 - [x] Cluster credentials configured
 - [x] Kubernetes nodes reachable
 - [x] Nodes reported "Ready"
 
-Ingress
+### Ingress
 
 - [x] Contour installed
 - [x] Envoy deployed
@@ -444,18 +438,18 @@ Ingress
 - [x] Ingress resource created
 - [x] External IP assigned
 
-Application
+### Application
 
 - [x] Nginx deployment created
 - [x] "ClusterIP" service created
 - [x] Ingress routed traffic to the application
 
-DNS
+### DNS
 
 - [x] DNS record created
 - [x] DNS mapped to the external load balancer address
 
-TLS
+### TLS
 
 - [x] cert-manager installed
 - [x] Let's Encrypt Issuer configured
@@ -466,54 +460,40 @@ TLS
 
 ---
 
-What I Learned
+## What I Learned
 
 This project demonstrates the relationship between several infrastructure layers that are often documented independently:
 
-Terraform
-   │
-   ▼
-GKE
-   │
-   ▼
-Kubernetes
-   │
-   ├── Deployment ───► Nginx
-   │
-   ├── Service ──────► ClusterIP
-   │
-   └── Ingress
-          │
-          ▼
-       Contour
-          │
-          ▼
-        Envoy
-          │
-          ▼
-    Load Balancer
-          │
-          ▼
-        DNS
-          │
-          ▼
-       HTTPS
-          │
-          ▼
-   cert-manager
-          │
-          ▼
-    Let's Encrypt
+```mermaid
+flowchart TD
+    Terraform["Terraform"] --> GKE["GKE"]
+    GKE --> Kubernetes["Kubernetes"]
+
+    Kubernetes --> Deployment["Deployment"]
+    Deployment --> Nginx["Nginx"]
+
+    Kubernetes --> Service["Service"]
+    Service --> ClusterIP["ClusterIP"]
+
+    Kubernetes --> Ingress["Ingress"]
+    Ingress --> Contour["Contour"]
+    Contour --> Envoy["Envoy"]
+    Envoy --> LB["Load Balancer"]
+    LB --> DNS["DNS"]
+    DNS --> HTTPS["HTTPS"]
+    HTTPS --> CertManager["cert-manager"]
+    CertManager --> LetsEncrypt["Let's Encrypt"]
+```
 
 The main takeaway is that Kubernetes Ingress is not an isolated resource. It sits inside a larger request path involving DNS, load balancing, ingress controllers, services, application workloads, and TLS infrastructure.
 
 ---
 
-Documentation Approach
+## Documentation Approach
 
 This project was documented from the perspective of a developer following the deployment rather than simply describing Kubernetes concepts.
 
-The documentation includes:
+### The documentation includes:
 
 - Prerequisites
 - Explicit commands
