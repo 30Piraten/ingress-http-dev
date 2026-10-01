@@ -1,5 +1,7 @@
 # Kubernetes Ingress: HTTP and HTTPS Traffic Management
 
+Read Full Article on Medium: [Kubernetes Ingress & HTTPS](https://ehikioyaraeva.medium.com/how-to-implement-kubernetes-ingress-for-http-and-https-traffic-management-4494a45fbfdc)
+
 A hands-on Kubernetes infrastructure project demonstrating how to expose a web application through Kubernetes Ingress, route HTTP/HTTPS traffic with Contour and Envoy, provision infrastructure with Terraform, configure DNS, and automate TLS certificates with cert-manager and Let's Encrypt.
 
 The project was built and documented as a practical infrastructure walkthrough, with configuration files, terminal commands, Kubernetes resources, and runtime output used to verify each stage of the deployment.
@@ -20,6 +22,7 @@ flowchart TD
     LE --> Cert["TLS Certificate"]
     Cert --> Ingress
 ```
+
 
 ## What this project demonstrates
 
