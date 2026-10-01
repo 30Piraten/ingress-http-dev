@@ -72,8 +72,6 @@ DNS / DDNS| Domain-to-IP resolution
 └── README.md
 ```
 
-> File names may differ depending on the current repository layout. The structure above represents the logical separation of infrastructure and Kubernetes configuration used in the project.
-
 ---
 
 ## Deployment Flow
