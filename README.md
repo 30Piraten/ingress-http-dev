@@ -338,7 +338,7 @@ This confirms that the ACME account was successfully registered with Let's Encry
 
 Create a Kubernetes "Certificate" resource:
 
-```bash
+```yaml
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -535,5 +535,3 @@ Focus areas:
 - AWS / GCP
 - Terraform
 - CI/CD
-
-"GitHub" (https://github.com/30Piraten) · "LinkedIn" (https://linkedin.com/in/evictor3) · "Medium" (https://ehikioyaraeva.medium.com)
