@@ -39,18 +39,19 @@ flowchart TD
 
 ## Technology Stack
 
-Technology| Purpose
-Kubernetes| Container orchestration
-Google Kubernetes Engine| Managed Kubernetes cluster
-Terraform| Infrastructure provisioning
-Contour| Kubernetes Ingress controller
-Envoy| Layer 7 proxy and traffic routing
-Nginx| Example web application
-cert-manager| TLS certificate lifecycle management
-Let's Encrypt| Certificate authority
-DNS / DDNS| Domain-to-IP resolution
-"kubectl"| Kubernetes administration
-"gcloud"| Google Cloud authentication and cluster access
+| Technology | Purpose |
+|---|---|
+| Kubernetes | Container orchestration |
+| Google Kubernetes Engine (GKE) | Managed Kubernetes cluster |
+| Terraform | Infrastructure provisioning |
+| Contour | Kubernetes Ingress controller |
+| Envoy | Layer 7 proxy and traffic routing |
+| Nginx | Example web application |
+| cert-manager | TLS certificate lifecycle management |
+| Let's Encrypt | Certificate authority |
+| DNS / DDNS | Domain-to-IP resolution |
+| `kubectl` | Kubernetes administration |
+| `gcloud` | Google Cloud authentication and cluster access |
 
 ## Project Structure
 
